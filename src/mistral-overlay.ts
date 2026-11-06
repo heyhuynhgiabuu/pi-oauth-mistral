@@ -2,8 +2,11 @@ import type { Api, Model } from "@earendil-works/pi-ai";
 
 import { LARGE_4_THINKING_LEVEL_MAP, MISTRAL_BASE_URL, MISTRAL_PROVIDER_ID, MODELS } from "./models.ts";
 
-// In Pi's catalog, but a subscription key cannot call them: Mistral answers
-// "Invalid model", or 403 for the Labs model (checked 2026-10-31).
+// In Pi 1.5.0's catalog, but a subscription key cannot call them: Mistral
+// answers "Invalid model", or 403 for the Labs model (checked 2026-10-31).
+// Six of these no longer appear in the 1.5.0 catalog at all. They stay listed
+// so the hide list still holds if a host's catalog reintroduces them; a stale
+// entry is harmless because the filter only matches ids that are present.
 const UNAVAILABLE_MODELS = new Set([
   "devstral-medium-2507",
   "devstral-small-2505",
@@ -15,8 +18,8 @@ const UNAVAILABLE_MODELS = new Set([
   "pixtral-large-latest",
 ]);
 
-// Pi's bundled catalog can lack these until its online catalog arrives, which
-// print mode never fetches. Pi's own entry wins as soon as it has one.
+// Kept as a safety net for hosts whose catalog omits them. On Pi 1.5.0 every
+// entry below is already in the built-in catalog, so this adds nothing there.
 const ALWAYS_OFFERED_MODELS = new Set(["mistral-large-4", "zai-glm-5-3", "zai-glm-5-3-flash"]);
 
 const GLM_5_2_THINKING_LEVEL_MAP = {
