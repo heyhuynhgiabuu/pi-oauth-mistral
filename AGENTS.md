@@ -8,11 +8,12 @@
 - Landing: PR, squash-merged on a green gate; agents land: yes
 - Release: `v1.x.y` Git tags with a GitHub Release, cut by hand from `main` after a behaviour change (see [Releasing](#releasing)); `package.json` `version` and the README pinned-install example match the tag; the Release notes are the changelog; `main` stays the default install; agents release: yes (owner 2026-10-23)
 - Outside issues and PRs: agents triage; outside PRs merge: owner approves
-- Sensitive paths: `src/mistral-oauth.ts`, `src/mistral-overlay.ts`, `src/models.ts`, `extensions/mistral-subscription/index.ts`, `package.json`, `.npmrc`, `.agents/`, `.githooks/`, `.github/workflows/`, `.github/dependabot.yml`, `.github/CODEOWNERS`, `.secretlintrc.json`, `.gitignore`, `AGENTS.md`
+- Sensitive paths: `src/mistral-oauth.ts`, `src/mistral-overlay.ts`, `src/models.ts`, `extensions/mistral-subscription/index.ts`, `package.json`, `.npmrc`, `.agents/`, `.githooks/`, `.github/workflows/`, `.github/CODEOWNERS`, `.secretlintrc.json`, `.gitignore`, `oxlint.config.ts`, `.oxfmtrc.json`, `AGENTS.md`
 
 Fork base: [`5omeOtherGuy/pi-mistral-subscription`](https://github.com/5omeOtherGuy/pi-mistral-subscription) at `v0.2.0-2-g8fb0d5c`. Upstream is kept as the `upstream` git remote for reference; changes here are not sent upstream automatically.
 
 Deliberate deviations from the standard:
+
 - No release workflow or `CHANGELOG.md`: releases are tagged by hand and GitHub Release notes serve as the changelog (owner decision 2026-10-23). npm publication is the owner's next step after the fork lands.
 - `CONTRIBUTING.md` keeps repository-specific rules: install with `npm ci --ignore-scripts`; cite sources for model IDs and limits and describe unexpected-response handling; never commit keys or captured requests; installation is from GitHub, npm publication is a separate maintainer decision.
 
@@ -36,6 +37,7 @@ Deliberate deviations from the standard:
 ## Releasing
 
 Cut a release when `git log $(git describe --tags --abbrev=0 origin/main)..origin/main` contains a behaviour change: models, login, provider, install, runtime or `peerDependencies` changes, security fixes. Docs-, CI-, test- and devDependency-only commits wait for the next one. The agent that merged the change releases; a change merged by the owner (outside PRs, security advisories) is released by the next agent working in the repository. One release covers every change since the previous tag.
+
 1. Pick the version (this fork starts at `1.0.0` because it targets a single Pi major): patch for fixes and additions that keep existing setups working, such as a new model; minor for new commands or capabilities and anything that removes or renames a model or provider ID, changes the login flow or raises the `peerDependencies` floor.
 2. Land a `chore(release): v1.x.y` PR through the steps above that changes only the version: `npm version --no-git-tag-version 1.x.y` (updates `package.json` and both `package-lock.json` fields) and the README pinned-install example.
 3. Right after the release PR merges, on its merge commit: `gh release create v1.x.y --target <full sha from gh pr view <n> --json mergeCommit -q .mergeCommit.oid> --title v1.x.y --notes-file <file>`. Until then the README points at a missing tag, so do this before anything else lands. Notes list the user-visible changes since the previous tag (`git log <previous tag>..<merge sha>`) with PR numbers and credit outside contributors. Report the release URL.

@@ -2,19 +2,55 @@
   "name": "@heyhuynhgiabuu/pi-oauth-mistral",
   "version": "1.0.0",
   "description": "Pi extension: Mistral subscription sign-in via browser OAuth for the built-in mistral provider, targeted at Pi 1.5.0.",
-  "license": "MIT",
-  "type": "module",
   "keywords": [
-    "pi-package",
     "mistral",
-    "oauth"
+    "oauth",
+    "pi-package"
   ],
+  "homepage": "https://github.com/heyhuynhgiabuu/pi-oauth-mistral#readme",
+  "bugs": {
+    "url": "https://github.com/heyhuynhgiabuu/pi-oauth-mistral/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "huynhgiabuu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heyhuynhgiabuu/pi-oauth-mistral.git"
+  },
   "files": [
     "extensions/",
     "src/",
     "README.md",
     "LICENSE"
   ],
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-reporter=dot --import tsx \"tests/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint .",
+    "secrets": "secretlint \"**/*\"",
+    "pack:check": "npm pack --dry-run --loglevel=error > /dev/null",
+    "check": "npm run -s format:check && npm run -s lint && npm run -s test && npm run -s typecheck && npm run -s secrets && npm run -s pack:check",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-ai": "1.5.0",
+    "@earendil-works/pi-coding-agent": "1.5.0",
+    "@secretlint/secretlint-rule-preset-recommend": "^13.1.0",
+    "@types/node": "~22.20.5",
+    "oxfmt": "0.72.0",
+    "oxlint": "1.87.0",
+    "secretlint": "^13.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": ">=1.5.0",
+    "@earendil-works/pi-coding-agent": ">=1.5.0"
+  },
   "engines": {
     "node": ">=22.19.0"
   },
@@ -22,38 +58,5 @@
     "extensions": [
       "./extensions/mistral-subscription"
     ]
-  },
-  "peerDependencies": {
-    "@earendil-works/pi-ai": ">=1.5.0",
-    "@earendil-works/pi-coding-agent": ">=1.5.0"
-  },
-  "scripts": {
-    "test": "node --test --test-reporter=dot --import tsx \"tests/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit",
-    "lint": "biome ci --colors=off .",
-    "secrets": "secretlint \"**/*\"",
-    "pack:check": "npm pack --dry-run --loglevel=error > /dev/null",
-    "check": "npm run -s lint && npm run -s test && npm run -s typecheck && npm run -s secrets && npm run -s pack:check"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.6.3",
-    "@earendil-works/pi-ai": "1.5.0",
-    "@earendil-works/pi-coding-agent": "1.5.0",
-    "@secretlint/secretlint-rule-preset-recommend": "^13.1.0",
-    "@types/node": "~22.20.5",
-    "secretlint": "^13.1.0",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/heyhuynhgiabuu/pi-oauth-mistral.git"
-  },
-  "homepage": "https://github.com/heyhuynhgiabuu/pi-oauth-mistral#readme",
-  "author": {
-    "name": "huynhgiabuu"
-  },
-  "bugs": {
-    "url": "https://github.com/heyhuynhgiabuu/pi-oauth-mistral/issues"
   }
 }
