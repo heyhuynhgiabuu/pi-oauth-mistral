@@ -4,6 +4,7 @@ import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-a
 import { mistralOAuth } from "../../src/mistral-oauth.ts";
 import { subscriptionModels } from "../../src/mistral-overlay.ts";
 import { MISTRAL_BASE_URL, MISTRAL_PROVIDER_ID, MISTRAL_SUBSCRIPTION_PROVIDER_ID, MODELS } from "../../src/models.ts";
+import { describeUsage, fetchMistralUsage } from "../../src/mistral-usage.ts";
 
 function warnIfDeprecated(model: ExtensionContext["model"], ctx: ExtensionContext) {
   if (model?.provider !== MISTRAL_SUBSCRIPTION_PROVIDER_ID) return;
@@ -62,6 +63,23 @@ export default function mistralSubscriptionExtension(pi: ExtensionAPI) {
         `${MISTRAL_PROVIDER_ID} accepts Mistral AI Studio browser sign-in through /login and uses Pi's built-in models and streaming.`,
         "info",
       );
+    },
+  });
+
+  pi.registerCommand("mistral-usage", {
+    description: "Show this period's Mistral Vibe Code and API allowances",
+    handler: async (_args, ctx) => {
+      const apiKey = await ctx.modelRegistry.getApiKeyForProvider(MISTRAL_PROVIDER_ID);
+      if (!apiKey) {
+        ctx.ui.notify(`No Mistral credential. Run /login and sign in to Mistral first.`, "warning");
+        return;
+      }
+      // A usage lookup must never fail the session: any error is reported, not thrown.
+      try {
+        ctx.ui.notify(describeUsage(await fetchMistralUsage(apiKey)), "info");
+      } catch (error) {
+        ctx.ui.notify(error instanceof Error ? error.message : String(error), "warning");
+      }
     },
   });
 }

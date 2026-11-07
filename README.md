@@ -15,7 +15,8 @@ Fork base: [`v0.2.0-2-g8fb0d5c`](https://github.com/5omeOtherGuy/pi-mistral-subs
 Small by design — the upstream logic was already correct.
 
 - **Pi 1.5.0 baseline.** `peerDependencies` and dev dependencies are `1.5.0` instead of `>=0.99.0` / `1.4.0`.
-- **Package rename.** `@heyhuynhgiabuu/pi-oauth-mistral`, version `1.0.0`. The extension path and provider ids are unchanged, so `/login` and `/model` behave exactly as before.
+- **Package rename.** `@heyhuynhgiabuu/pi-oauth-mistral`. The extension path and provider ids are unchanged, so `/login` and `/model` behave exactly as before.
+- **`/mistral-usage` command.** New in this fork: prints the Vibe Code and API allowances for the current period. See [Checking the allowances from Pi](#checking-the-allowances-from-pi).
 - **Stale comments corrected.** Upstream claimed Pi's catalog may lack `mistral-large-4`, `zai-glm-5-3` and `zai-glm-5-3-flash` until an online catalog arrives. Verified in 1.5.0: all three ship in the built-in catalog, and the `mistral` provider has no `fetchModels` hook, so no online catalog fetch happens for it.
 - **One test fixture replaced.** Upstream asserted on `pixtral-large-latest`, which no longer exists in the 1.5.0 catalog. The assertion now uses `labs-leanstral-1-5-1`, a model that is present and still hidden by the overlay.
 
@@ -62,11 +63,27 @@ Measured on an Education plan (Pro with student discount): a request through thi
 
 Both pay-as-you-go toggles were off, so exhausting an allowance stops usage rather than producing a bill. Check your own Admin Panel before relying on any figure here.
 
+### Checking the allowances from Pi
+
+`/mistral-usage` prints both pools for the current period, using the credential the sign-in already stored:
+
+```text
+Mistral EDU plan. Vibe Code: $1.28 of $150.00 (0.9% used), resets 2026-12-01. API: $0.08 of $15.00 (0.5% used), resets 2026-12-01.
+```
+
+It calls `GET https://api.mistral.ai/v1/billing/budget` and `/v1/billing/subscription` with the sign-in key as a bearer token (checked 2026-11-06). Three details of that response are worth knowing if you query it yourself:
+
+- **The top-level fields repeat the API budget.** `initial_budget` and `usage_percentage` sit at the top level as a copy of `api_budget`. Read `vibe_budget` and `api_budget` instead, or the Vibe figure silently becomes $15.
+- **`usage_percentage` is a percentage, not money.** Convert it: `initial_budget * usage_percentage / 100`.
+- **`/v1/admin/*` does not work with this key.** Those endpoints (`/v1/admin/usage`, `/v1/admin/spend-limit`) return 401 with the sign-in credential; they need an admin-scoped key. `/v1/billing/*` is the usable path and already carries both pools.
+
+A failed lookup reports the reason and leaves the session alone. Both header styles work on `api.mistral.ai`; `console.mistral.ai/api/...` rejects the key either way (401), so billing reads only go through `api.mistral.ai`.
+
 ## Security notes
 
 - **No runtime dependencies.** Every `@earendil-works/*` import is `import type`, erased at load. Only `node:util` and `node:crypto` are used. An install leaves `node_modules` empty.
 - **No install scripts.** `package.json` declares no lifecycle scripts. This matters because `pi install` runs `npm install` **without** `--ignore-scripts`, and `pi update --extensions` does a `git reset --hard` plus reinstall.
-- **Three hosts, all Mistral.** `console.mistral.ai` for the sign-in, `api.mistral.ai` for inference. PKCE is S256 with 64 random bytes; `code_verifier` goes only to `console.mistral.ai`. Both `sign_in_url` and `poll_url` are validated against their expected origins before use.
+- **Two hosts, both Mistral.** `console.mistral.ai` for the sign-in only, `api.mistral.ai` for inference and the `/mistral-usage` billing reads. PKCE is S256 with 64 random bytes; `code_verifier` goes only to `console.mistral.ai`. Both `sign_in_url` and `poll_url` are validated against their expected origins before use.
 - **The flow mirrors Mistral's own CLI.** Verified against `mistralai/mistral-vibe` → `vibe/setup/auth/http_browser_sign_in_gateway.py`: same `/vibe/sign-in` path, same payload, same poll states, same `/exchange` call. It is an internal endpoint of the Vibe CLI, not a published API contract.
 
 Treat that last point as the standing risk: the endpoint can change without notice, and Mistral's consumer terms exclude "Mistral AI Studio and access to any of our APIs". Using the subscription through Vibe Code usage is the reading that fits what the plan sells; that is an argument, not a guarantee.
